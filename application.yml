@@ -1,18 +1,26 @@
 ---
+apiVersion: codemowers.io/v1alpha1
+kind: Secret
+metadata:
+  name: mysql-cluster-secrets
+spec:
+  mapping:
+    - key: rootPassword
+      value: "%(password)s"
+---
 apiVersion: mysql.oracle.com/v2
 kind: InnoDBCluster
 metadata:
   name: mysql-cluster
 spec:
-  imageRepository: harbor.codemowers.eu/docker.io/mysql
   version: 8.0.31
-  secretName: mysql-secrets
+  secretName: mysql-cluster-secrets
   instances: 3
   router:
     instances: 2
   tlsUseSelfSigned: true
   datadirVolumeClaimTemplate:
-    storageClassName: openebs-hostpath
+    storageClassName: mysql
     accessModes:
       - ReadWriteOnce
     resources:
@@ -49,7 +57,7 @@ spec:
     spec:
       containers:
         - name: phpmyadmin
-          image: harbor.codemowers.eu/docker.io/phpmyadmin/phpmyadmin:5.2.0
+          image: phpmyadmin:5.2.0
           ports:
             - name: web
               containerPort: 80
@@ -75,7 +83,7 @@ metadata:
     external-dns.alpha.kubernetes.io/target: traefik.codemowers.ee
 spec:
   rules:
-  - host: phpmyadmin-3nk45yqd6e.codemowers.ee
+  - host: phpmyadmin-lauri.codemowers.ee
     http:
       paths:
       - pathType: Prefix
